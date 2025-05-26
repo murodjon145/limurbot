@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LimurClicker</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    .limur-img {
+      width: 120px;
+      height: 120px;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+    .limur-img:active {
+      transform: scale(0.95);
+    }
+  </style>
+</head>
+<body class="bg-gray-100 text-gray-900">
+  <div class="max-w-md mx-auto p-4">
+    <h1 class="text-2xl font-bold text-center mb-4">🍌 LimurClicker 🍌</h1>
+
+    <!-- Coin Display -->
+    <div class="bg-yellow-200 p-3 rounded-lg text-center font-semibold text-lg mb-4">
+      Coins: <span id="coin-count">0</span>
+    </div>
+
+    <!-- Limur Clicker -->
+    <div class="flex justify-center mb-6">
+      <img src="https://i.ibb.co/D7bwLqX/lemur.png" alt="limur" class="limur-img" id="clicker" />
+    </div>
+
+    <!-- Buttons -->
+    <div class="grid grid-cols-2 gap-2 mb-4">
+      <button class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded" onclick="openShop()">🛍️ Do'kon</button>
+      <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded" onclick="openBoosts()">🧪 Boostlar</button>
+      <button class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded" onclick="claimBonus()">🎁 Har kuni bonus</button>
+      <button class="bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded" onclick="openStats()">📊 Statistika</button>
+    </div>
+
+    <!-- Section Outputs -->
+    <div id="section-output"></div>
+  </div>
+
+  <script>
+    let coins = 0;
+    let clickPower = 1;
+    let autoClickEnabled = false;
+    let autoClickSpeed = 1000;
+    let autoClickInterval;
+
+    const coinCount = document.getElementById('coin-count');
+    const clicker = document.getElementById('clicker');
+    const output = document.getElementById('section-output');
+
+    clicker.onclick = () => {
+      coins += clickPower;
+      updateUI();
+    }
+
+    function updateUI() {
+      coinCount.textContent = coins;
+    }
+
+    function openShop() {
+      output.innerHTML = `
+        <div class="bg-white p-4 rounded shadow">
+          <h2 class="text-xl font-bold mb-2">🛍️ Do'kon</h2>
+          <div class="space-y-2">
+            <button onclick="buyUpgrade(10, 'click')" class="w-full bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded">⬆️ Click Power +1 (10 coins)</button>
+            <button onclick="buyUpgrade(50, 'auto')" class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-4 rounded">🤖 AutoClick (50 coins)</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function openBoosts() {
+      output.innerHTML = `
+        <div class="bg-white p-4 rounded shadow">
+          <h2 class="text-xl font-bold mb-2">🧪 Boostlar</h2>
+          <div class="space-y-2">
+            <button onclick="activateBoost('clickPower', 2, 60000, 1500)" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-2 px-4 rounded">⚡ 2x Click Power (60s, 1500 coins)</button>
+            <button onclick="activateBoost('autoClickSpeed', 2, 45000, 2000)" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded">⏱️ 2x AutoClick Speed (45s, 2000 coins)</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function claimBonus() {
+      coins += 100;
+      updateUI();
+      alert('🎉 Siz har kungi 100 coin bonus oldingiz!');
+    }
+
+    function openStats() {
+      output.innerHTML = `
+        <div class="bg-white p-4 rounded shadow">
+          <h2 class="text-xl font-bold mb-2">📊 Statistika</h2>
+          <ul class="list-disc ml-4">
+            <li>Jami coin: ${coins}</li>
+            <li>Click Power: ${clickPower}</li>
+            <li>AutoClick: ${autoClickEnabled ? '🟢 Aktiv' : '🔴 O‘chirilgan'}</li>
+          </ul>
+        </div>
+      `;
+    }
+
+    function buyUpgrade(cost, type) {
+      if (coins < cost) return alert('Yetarli coin yo‘q');
+      coins -= cost;
+      if (type === 'click') clickPower++;
+      if (type === 'auto') {
+        if (!autoClickEnabled) {
+          autoClickEnabled = true;
+          autoClickInterval = setInterval(() => {
+            coins += clickPower;
+            updateUI();
+          }, autoClickSpeed);
+        }
+      }
+      updateUI();
+    }
+
+    function activateBoost(type, multiplier, duration, price) {
+      if (coins < price) return alert('Yetarli coin yo‘q');
+      coins -= price;
+      let original;
+      if (type === 'clickPower') {
+        original = clickPower;
+        clickPower *= multiplier;
+        setTimeout(() => {
+          clickPower = original;
+        }, duration);
+      }
+      if (type === 'autoClickSpeed') {
+        if (!autoClickEnabled) return alert('AvtoClick hali yoqilmagan!');
+        original = autoClickSpeed;
+        clearInterval(autoClickInterval);
+        autoClickSpeed /= multiplier;
+        autoClickInterval = setInterval(() => {
+          coins += clickPower;
+          updateUI();
+        }, autoClickSpeed);
+        setTimeout(() => {
+          clearInterval(autoClickInterval);
+          autoClickSpeed = original;
+          autoClickInterval = setInterval(() => {
+            coins += clickPower;
+            updateUI();
+          }, autoClickSpeed);
+        }, duration);
+      }
+      updateUI();
+    }
+  </script>
+</body>
+</html>
